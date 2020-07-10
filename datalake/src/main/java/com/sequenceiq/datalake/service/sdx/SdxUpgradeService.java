@@ -31,6 +31,7 @@ import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.cluster.Cluster
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.cluster.clouderamanager.ClouderaManagerProductV4Response;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.cluster.clouderamanager.ClouderaManagerV4Response;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.upgrade.UpgradeOptionV4Response;
+import com.sequenceiq.cloudbreak.auth.altus.Crn;
 import com.sequenceiq.cloudbreak.cloud.scheduler.PollGroup;
 import com.sequenceiq.cloudbreak.common.json.JsonUtil;
 import com.sequenceiq.cloudbreak.exception.CloudbreakApiException;
@@ -73,7 +74,8 @@ public class SdxUpgradeService {
                     DatalakeStatusEnum.CHANGE_IMAGE_IN_PROGRESS,
                     "Changing image",
                     cluster.get());
-            FlowIdentifier flowIdentifier = stackV4Endpoint.changeImage(0L, cluster.get().getClusterName(), stackImageChangeRequest);
+            FlowIdentifier flowIdentifier = stackV4Endpoint.changeImage(0L, cluster.get().getClusterName(), stackImageChangeRequest,
+                    Crn.fromString(cluster.get().getCrn()).getAccountId());
             cloudbreakFlowService.saveLastCloudbreakFlowChainId(cluster.get(), flowIdentifier);
         } else {
             throw new NotFoundException("Not found cluster with id" + id);
@@ -87,7 +89,8 @@ public class SdxUpgradeService {
                 "Upgrading datalake stack",
                 sdxCluster);
         try {
-            FlowIdentifier flowIdentifier = stackV4Endpoint.upgradeClusterByName(0L, sdxCluster.getClusterName(), imageId);
+            FlowIdentifier flowIdentifier = stackV4Endpoint.upgradeClusterByName(0L, sdxCluster.getClusterName(), imageId,
+                    Crn.fromString(sdxCluster.getCrn()).getAccountId());
             cloudbreakFlowService.saveLastCloudbreakFlowChainId(sdxCluster, flowIdentifier);
         } catch (WebApplicationException e) {
             String message = String.format("Stack upgrade failed on cluster: [%d]. Message: [%s]", id, e.getMessage());
@@ -98,7 +101,8 @@ public class SdxUpgradeService {
     public String getImageId(Long id) {
         Optional<SdxCluster> cluster = sdxClusterRepository.findById(id);
         if (cluster.isPresent()) {
-            StackV4Response stackV4Response = stackV4Endpoint.get(0L, cluster.get().getClusterName(), Set.of());
+            StackV4Response stackV4Response = stackV4Endpoint.get(0L, cluster.get().getClusterName(), Set.of(),
+                    Crn.fromString(cluster.get().getCrn()).getAccountId());
             return stackV4Response.getImage().getId();
         } else {
             throw new NotFoundException("Cluster not found with id" + id);
@@ -109,7 +113,8 @@ public class SdxUpgradeService {
         SdxCluster sdxCluster = sdxService.getById(sdxId);
         String clusterName = sdxCluster.getClusterName();
         LOGGER.info("Trying to update the runtime version from Cloudbreak for cluster: {}", clusterName);
-        StackV4Response stack = stackV4Endpoint.get(0L, clusterName, Set.of());
+        StackV4Response stack = stackV4Endpoint.get(0L, clusterName, Set.of(),
+                Crn.fromString(sdxCluster.getCrn()).getAccountId());
         Optional<String> cdpVersionOpt = getCdpVersion(stack);
         if (cdpVersionOpt.isPresent()) {
             String version = cdpVersionOpt.get();
@@ -152,7 +157,8 @@ public class SdxUpgradeService {
 
     public String getCurrentImageCatalogName(Long id) {
         SdxCluster cluster = sdxClusterRepository.findById(id).orElseThrow(notFound("Cluster", id));
-        StackV4Response stackV4Response = stackV4Endpoint.get(0L, cluster.getClusterName(), Set.of());
+        StackV4Response stackV4Response = stackV4Endpoint.get(0L, cluster.getClusterName(), Set.of(),
+                Crn.fromString(cluster.getCrn()).getAccountId());
         return stackV4Response.getImage().getCatalogName();
     }
 
@@ -163,7 +169,8 @@ public class SdxUpgradeService {
                     DatalakeStatusEnum.DATALAKE_UPGRADE_IN_PROGRESS,
                     "OS upgrade started",
                     cluster.get());
-            FlowIdentifier flowIdentifier = stackV4Endpoint.upgradeOs(0L, cluster.get().getClusterName());
+            FlowIdentifier flowIdentifier = stackV4Endpoint.upgradeOs(0L, cluster.get().getClusterName(),
+                    Crn.fromString(cluster.get().getCrn()).getAccountId());
             cloudbreakFlowService.saveLastCloudbreakFlowChainId(cluster.get(), flowIdentifier);
         } else {
             throw new NotFoundException("Cluster not found with id" + id);
@@ -201,7 +208,8 @@ public class SdxUpgradeService {
 
     private AttemptResult<StackV4Response> getStackResponseAttemptResult(SdxCluster sdxCluster, String pollingMessage, FlowState flowState)
             throws JsonProcessingException {
-        StackV4Response stackV4Response = stackV4Endpoint.get(0L, sdxCluster.getClusterName(), Collections.emptySet());
+        StackV4Response stackV4Response = stackV4Endpoint.get(0L, sdxCluster.getClusterName(), Collections.emptySet(),
+                Crn.fromString(sdxCluster.getCrn()).getAccountId());
         LOGGER.info("Response from cloudbreak: {}", JsonUtil.writeValueAsString(stackV4Response));
         ClusterV4Response cluster = stackV4Response.getCluster();
         if (stackAndClusterAvailable(stackV4Response, cluster)) {

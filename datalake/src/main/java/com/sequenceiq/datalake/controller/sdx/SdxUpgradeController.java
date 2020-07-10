@@ -35,7 +35,7 @@ public class SdxUpgradeController implements SdxUpgradeEndpoint {
         String userCrn = ThreadBasedUserCrnProvider.getUserCrn();
         lockComponentsIfRuntimeUpgradeIsDisabled(request, userCrn, clusterName);
         if (request.isDryRun(request)) {
-            return sdxRuntimeUpgradeService.checkForUpgradeByName(userCrn, clusterName, request);
+            return sdxRuntimeUpgradeService.checkForUpgradeByName(userCrn, clusterName, request, ThreadBasedUserCrnProvider.getAccountId());
         } else {
             return sdxRuntimeUpgradeService.triggerUpgradeByName(userCrn, clusterName, request);
         }
@@ -47,7 +47,7 @@ public class SdxUpgradeController implements SdxUpgradeEndpoint {
         String userCrn = ThreadBasedUserCrnProvider.getUserCrn();
         lockComponentsIfRuntimeUpgradeIsDisabled(request, userCrn, clusterCrn);
         if (request.isDryRun(request)) {
-            return sdxRuntimeUpgradeService.checkForUpgradeByCrn(userCrn, clusterCrn, request);
+            return sdxRuntimeUpgradeService.checkForUpgradeByCrn(userCrn, clusterCrn, request, ThreadBasedUserCrnProvider.getAccountId());
         } else {
             return sdxRuntimeUpgradeService.triggerUpgradeByCrn(userCrn, clusterCrn, request);
         }
