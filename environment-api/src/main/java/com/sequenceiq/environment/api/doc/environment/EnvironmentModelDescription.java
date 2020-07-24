@@ -92,6 +92,7 @@ public class EnvironmentModelDescription {
 
     public static final String PROXYCONFIG_NAME = "Name of the proxyconfig of the environment.";
     public static final String PROXYCONFIG_RESPONSE = "ProxyConfig attached to the environment.";
+    public static final String UPDATE_STACKS_CONFIG = "Update the configuration for all Stacks in the Environment.";
 
     private EnvironmentModelDescription() {
     }

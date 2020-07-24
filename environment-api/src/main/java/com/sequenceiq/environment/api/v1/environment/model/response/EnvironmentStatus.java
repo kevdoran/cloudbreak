@@ -59,7 +59,9 @@ public enum EnvironmentStatus {
     START_FREEIPA_STARTED("Starting Free IPA"),
     START_FREEIPA_FAILED("Failed to Start Free IPA"),
 
-    FREEIPA_DELETED_ON_PROVIDER_SIDE("Free IPA deleted on cloud provider side");
+    FREEIPA_DELETED_ON_PROVIDER_SIDE("Free IPA deleted on cloud provider side"),
+
+    STACKS_CONFIG_UPDATE_IN_PROGRESS("Stack configuration updates in progress");
 
     private static final Set<EnvironmentStatus> STARTABLE_STATUSES = Set.of(
             AVAILABLE,
