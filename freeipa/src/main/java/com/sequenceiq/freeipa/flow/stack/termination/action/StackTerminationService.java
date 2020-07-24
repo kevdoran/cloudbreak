@@ -32,7 +32,7 @@ public class StackTerminationService {
     public void handleStackTerminationError(Stack stack, StackFailureEvent payload, boolean forced) {
         if (!forced) {
             Exception errorDetails = payload.getException();
-            String stackUpdateMessage = "Termination failed: " + errorDetails.getMessage();
+            String stackUpdateMessage = " Termination failed: " + errorDetails.getMessage();
             stackUpdater.updateStackStatus(stack.getId(), DetailedStackStatus.DELETE_FAILED, stackUpdateMessage);
             LOGGER.debug("Error during stack termination flow: ", errorDetails);
         } else {
