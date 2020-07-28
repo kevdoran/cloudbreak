@@ -64,6 +64,22 @@ public class PlatformParameterService {
                 CdpResourceType.DEFAULT);
     }
 
+    public PlatformResourceRequest getPlatformResourceRequestByEnvironment(
+            String accountId,
+            String environmentCrn,
+            String region,
+            String platformVariant,
+            String availabilityZone) {
+        return getPlatformResourceRequestByEnvironment(
+                accountId,
+                environmentCrn,
+                region,
+                platformVariant,
+                availabilityZone,
+                null,
+                CdpResourceType.DEFAULT);
+    }
+
     public PlatformResourceRequest getPlatformResourceRequest(
             String accountId,
             String credentialName,
@@ -75,6 +91,45 @@ public class PlatformParameterService {
         return getPlatformResourceRequest(
                 accountId,
                 credentialName,
+                credentialCrn,
+                region,
+                platformVariant,
+                availabilityZone,
+                accessConfigType,
+                CdpResourceType.DEFAULT);
+    }
+
+    public PlatformResourceRequest getPlatformResourceRequestByEnvironment(
+            String accountId,
+            String environmentCrn,
+            String region,
+            String platformVariant,
+            String availabilityZone,
+            AccessConfigTypeQueryParam accessConfigType) {
+        return getPlatformResourceRequestByEnvironment(
+                accountId,
+                environmentCrn,
+                region,
+                platformVariant,
+                availabilityZone,
+                accessConfigType,
+                CdpResourceType.DEFAULT);
+    }
+
+    //CHECKSTYLE:OFF
+    public PlatformResourceRequest getPlatformResourceRequestByEnvironment(
+            String accountId,
+            String environmentCrn,
+            String region,
+            String platformVariant,
+            String availabilityZone,
+            AccessConfigTypeQueryParam accessConfigType,
+            CdpResourceType cdpResourceType) {
+        //CHECKSTYLE:ON
+        String credentialCrn = credentialService.getByEnvironmentCrnAndAccountId(environmentCrn, accountId, ENVIRONMENT).getResourceCrn();
+        return getPlatformResourceRequest(
+                accountId,
+                null,
                 credentialCrn,
                 region,
                 platformVariant,
@@ -97,11 +152,11 @@ public class PlatformParameterService {
         PlatformResourceRequest platformResourceRequest = new PlatformResourceRequest();
 
         if (!Strings.isNullOrEmpty(credentialName)) {
-            platformResourceRequest.setCredential(credentialService.getByNameForAccountId(credentialName, accountId, ENVIRONMENT));
+            throw new BadRequestException("The credentialName is deprecated, please use credentialCrn instead in the request");
         } else if (!Strings.isNullOrEmpty(credentialCrn)) {
             platformResourceRequest.setCredential(credentialService.getByCrnForAccountId(credentialCrn, accountId, ENVIRONMENT));
         } else {
-            throw new BadRequestException("The credentialId or the credentialName must be specified in the request");
+            throw new BadRequestException("The credentialCrn must be specified in the request");
         }
 
         if (!Strings.isNullOrEmpty(platformVariant)) {

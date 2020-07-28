@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiOperation;
 @Consumes(MediaType.APPLICATION_JSON)
 @Api(value = "/v1/platform_resources", description = PlatformResourceModelDescription.CONNECTOR_V1_DESCRIPTION, protocols = "http,https",
         consumes = MediaType.APPLICATION_JSON)
-public interface PlatformResourceEndpoint {
+public interface CredentialPlatformResourceEndpoint {
 
     @GET
     @Path("machine_types")

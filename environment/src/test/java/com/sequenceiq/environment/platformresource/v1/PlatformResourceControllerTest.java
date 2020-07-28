@@ -30,7 +30,7 @@ class PlatformResourceControllerTest {
     private PlatformParameterService platformParameterService;
 
     @InjectMocks
-    private PlatformResourceController underTest;
+    private CredentialPlatformResourceController underTest;
 
     @Test
     void getNoSqlTables() {
