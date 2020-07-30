@@ -31,6 +31,7 @@ import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.GetEv
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.GetRightsResponse;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.Group;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.MachineUser;
+import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ServicePrincipalCloudIdentities;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.User;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
@@ -269,6 +270,26 @@ public class GrpcUmsClient {
             String generatedRequestId = requestId.orElse(UUID.randomUUID().toString());
             LOGGER.debug("Deleting machine user {} by {} using request ID {}", machineUserName, userCrn, generatedRequestId);
             client.deleteMachineUser(generatedRequestId, userCrn, machineUserName);
+        }
+    }
+
+    /**
+     * Retrieves list of an environments service principal cloud identities from UMS.
+     *
+     * @param accountId       the account Id
+     * @param envrionmentCrn  the envrionment crn
+     * @param requestId       an optional request Id
+     * @return list of service principal cloud identities
+     */
+    public List<ServicePrincipalCloudIdentities> listServicePrincipalCloudIdentities(String actorCrn, String accountId, String envrionmentCrn,
+        Optional<String> requestId) {
+        try (ManagedChannelWrapper channelWrapper = makeWrapper()) {
+            UmsClient client = makeClient(channelWrapper.getChannel(), actorCrn);
+            LOGGER.debug("Listing service principal cloud identities for account {} using request ID {}", accountId, requestId);
+            List<ServicePrincipalCloudIdentities> servicePrincipalCloudIdentities = client.listServicePrincipalCloudIdentities(
+                    requestId.orElse(UUID.randomUUID().toString()), accountId, envrionmentCrn);
+            LOGGER.debug("{} ServicePrincipalCloudIdentities found for account {}", servicePrincipalCloudIdentities.size(), accountId);
+            return servicePrincipalCloudIdentities;
         }
     }
 

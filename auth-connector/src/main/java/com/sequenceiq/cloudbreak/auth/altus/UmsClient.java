@@ -33,6 +33,8 @@ import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListG
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListGroupsResponse;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListMachineUsersRequest;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListMachineUsersResponse;
+import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListServicePrincipalCloudIdentitiesRequest;
+import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListServicePrincipalCloudIdentitiesResponse;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListUsersRequest;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListUsersResponse;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListWorkloadAdministrationGroupsForMemberRequest;
@@ -40,6 +42,7 @@ import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListW
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListWorkloadAdministrationGroupsRequest;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ListWorkloadAdministrationGroupsResponse;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.MachineUser;
+import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.ServicePrincipalCloudIdentities;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.User;
 import com.cloudera.thunderhead.service.usermanagement.UserManagementProto.WorkloadAdministrationGroup;
 import com.sequenceiq.cloudbreak.auth.altus.config.UmsClientConfig;
@@ -327,6 +330,33 @@ public class UmsClient {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Wraps calls to ListServicePrincipalCloudIdentities with an Account ID.
+     *
+     * @param requestId       the request ID for the request
+     * @param accountId       the account ID
+     * @param environmentCrn  the crn of the environment to list service prinnciples for
+     * @return the list of service principal cloud identities
+     */
+    public List<ServicePrincipalCloudIdentities> listServicePrincipalCloudIdentities(String requestId, String accountId, String environmentCrn) {
+        checkNotNull(requestId);
+        checkNotNull(accountId);
+
+        List<ServicePrincipalCloudIdentities> servicePrincipalCloudIdentities = new ArrayList<>();
+
+        ListServicePrincipalCloudIdentitiesRequest.Builder requestBuilder = ListServicePrincipalCloudIdentitiesRequest.newBuilder()
+                .setAccountId(accountId)
+                .setEnvironmentCrn(environmentCrn);
+
+        UserManagementProto.ListServicePrincipalCloudIdentitiesResponse response;
+        do {
+            response = newStub(requestId).listServicePrincipalCloudIdentities(requestBuilder.build());
+            servicePrincipalCloudIdentities.addAll(response.getServicePrincipalCloudIdentitiesList());
+            requestBuilder.setPageToken(response.getNextPageToken());
+        } while (response.hasNextPageToken());
+        return servicePrincipalCloudIdentities;
     }
 
     private <T> void checkSingleUserResponse(List<T> users, String crnResource) {
@@ -682,6 +712,14 @@ public class UmsClient {
         checkNotNull(accountId);
         return newStub(requestId).listRoles(UserManagementProto.ListRolesRequest.newBuilder()
                 .setAccountId(accountId)
+                .build());
+    }
+
+    public ListServicePrincipalCloudIdentitiesResponse listServicePrincipalCloudIdentities2(String requestId, String accountId, String environmentCrn) {
+        checkNotNull(accountId);
+        return newStub(requestId).listServicePrincipalCloudIdentities(UserManagementProto.ListServicePrincipalCloudIdentitiesRequest.newBuilder()
+                .setAccountId(accountId)
+                .setEnvironmentCrn(environmentCrn)
                 .build());
     }
 
